@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. 自訂深藍底 + 全黃字高對比 CSS
+# 2. 強制全表格同色 (深藍底 + 鮮黃粗字) 與全內容置中 CSS
 st.markdown("""
 <style>
     /* 全域極致深藍背景 */
@@ -49,34 +49,51 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
     }
 
-    /* 深藍晶透表頭 */
+    /* 頂部標籤列（與表格風格統一） */
     .table-header {
         font-size: 1.2rem;
         font-weight: 900;
         padding: 12px 15px;
-        border-radius: 12px 12px 0px 0px;
+        border-radius: 10px 10px 0px 0px;
         text-align: center;
-        margin-bottom: -5px;
-        letter-spacing: 1px;
-        background: #0F172A !important;
+        margin-bottom: -1px;
+        background-color: #0F172A !important;
         color: #FFE81F !important;
         border: 2px solid #3B82F6 !important;
     }
 
-    /* 強制 Streamlit 原生表格內容居中、深藍底、粗黃字 */
+    /* 🎯 關鍵：強制所有 stDataFrame 裡面的表格、表頭(th)、資料格(td)全部【字體置中】與【統一配色】 */
+    div[data-testid="stDataFrame"] {
+        width: 100% !important;
+    }
+    
     div[data-testid="stDataFrame"] table {
+        width: 100% !important;
         text-align: center !important;
     }
-    div[data-testid="stDataFrame"] td, div[data-testid="stDataFrame"] th {
+
+    /* 全表頭統一：深藍底 + 鮮黃字 + 粗體 + 置中 */
+    div[data-testid="stDataFrame"] th, 
+    div[data-testid="stDataFrame"] th * {
+        background-color: #0F172A !important;
+        color: #FFE81F !important;
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
         text-align: center !important;
+        justify-content: center !important;
+        border: 1px solid #334155 !important;
+    }
+
+    /* 全資料格統一：深藍底 + 鮮黃字 + 粗體 + 置中 */
+    div[data-testid="stDataFrame"] td, 
+    div[data-testid="stDataFrame"] td * {
+        background-color: #1E293B !important;
+        color: #FFE81F !important;
         font-size: 1.1rem !important;
         font-weight: 900 !important;
-        color: #FFE81F !important;
-        background-color: #1E293B !important;
-        border-color: #334155 !important;
-    }
-    div[data-testid="stDataFrame"] th {
-        background-color: #0F172A !important;
+        text-align: center !important;
+        justify-content: center !important;
+        border: 1px solid #334155 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -126,23 +143,13 @@ def fetch_stock_data(symbol_list):
             
     return pd.DataFrame(results)
 
-with st.spinner('⚡ 正在載入深藍高對比金融數據...'):
+with st.spinner('⚡ 正在載入深藍黃字終端數據...'):
     bench_df = fetch_stock_data(BENCHMARK_LIST)
     active_df = fetch_stock_data(ACTIVE_ETF_LIST)
 
-# 🎨 深藍底 + 鮮黃字樣式定義
-def style_rank(val):
-    return 'background-color: #0F172A; color: #FFE81F; font-weight: 900; text-align: center; border: 1px solid #3B82F6;'
-
-def style_symbol(val):
-    return 'background-color: #0F172A; color: #FFE81F; font-weight: 900; text-align: center; border: 1px solid #FACC15;'
-
-def style_price(val):
+# 🎨 統一風格函式（所有欄位均回傳一模一樣的深藍底 + 鮮黃字與置中）
+def uniform_style(val):
     return 'background-color: #1E293B; color: #FFE81F; font-weight: 900; text-align: center;'
-
-def style_performance(val):
-    # 統一採用深藍底 + 鮮黃字包覆（帶微黃線框增強對比）
-    return 'background-color: #0F172A; color: #FFE81F; font-weight: 900; text-align: center; border: 1px solid #FACC15; border-radius: 4px;'
 
 # ----------------------------------------------------
 # 頂部：獨立大盤與基準對照區 (Benchmark)
@@ -153,9 +160,7 @@ if not bench_df.empty:
     st.markdown('<div class="table-header">⚖️ 基準對照標的 (0050 / 009816)</div>', unsafe_allow_html=True)
     styled_bench = (
         bench_df.style
-        .map(style_symbol, subset=["ETF代號"])
-        .map(style_price, subset=["最新價"])
-        .map(style_performance, subset=["5日績效", "20日績效", "60日績效"])
+        .map(uniform_style)
         .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%", "20日績效": "{:+.2f}%", "60日績效": "{:+.2f}%"})
     )
     st.dataframe(styled_bench, use_container_width=True, hide_index=True)
@@ -179,10 +184,7 @@ if not active_df.empty:
         
         styled_5d = (
             df_5d.style
-            .map(style_rank, subset=["名次"])
-            .map(style_symbol, subset=["ETF代號"])
-            .map(style_price, subset=["最新價"])
-            .map(style_performance, subset=["5日績效"])
+            .map(uniform_style)
             .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%"})
         )
         st.dataframe(styled_5d, use_container_width=True, hide_index=True)
@@ -196,10 +198,7 @@ if not active_df.empty:
         
         styled_20d = (
             df_20d.style
-            .map(style_rank, subset=["名次"])
-            .map(style_symbol, subset=["ETF代號"])
-            .map(style_price, subset=["最新價"])
-            .map(style_performance, subset=["20日績效"])
+            .map(uniform_style)
             .format({"最新價": "${:.2f}", "20日績效": "{:+.2f}%"})
         )
         st.dataframe(styled_20d, use_container_width=True, hide_index=True)
@@ -213,10 +212,7 @@ if not active_df.empty:
         
         styled_60d = (
             df_60d.style
-            .map(style_rank, subset=["名次"])
-            .map(style_symbol, subset=["ETF代號"])
-            .map(style_price, subset=["最新價"])
-            .map(style_performance, subset=["60日績效"])
+            .map(uniform_style)
             .format({"最新價": "${:.2f}", "60日績效": "{:+.2f}%"})
         )
         st.dataframe(styled_60d, use_container_width=True, hide_index=True)
