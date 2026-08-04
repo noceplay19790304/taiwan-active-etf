@@ -1,4 +1,4 @@
-  import streamlit as st
+import streamlit as st
 import yfinance as yf
 import pandas as pd
 
@@ -70,4 +70,4 @@ if not data.empty:
         hide_index=True
     )
 else:
-    st.warning("⚠️ 目前抓取不到資料，請檢查 ETF 代號是否正確或 Yahoo Finance 是否暫時無資料。")  
+    st.warning("⚠️ 目前抓取不到資料，請檢查 ETF 代號是否正確或 Yahoo Finance 是否暫時無資料。")
