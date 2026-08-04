@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 # 1. 頁面配置：暗黑模式 + 寬螢幕
 st.set_page_config(
-    page_title="台股主動式 ETF 績效終端", 
+    page_title="台股主動式 ETF 績效榜", 
     page_icon="📈", 
     layout="wide"
 )
@@ -13,13 +13,10 @@ st.set_page_config(
 # 2. 自訂 CSS 打造專業財經風格面板
 st.markdown("""
 <style>
-    /* 全域背景與字體優化 */
     .stApp {
         background-color: #0E1117;
         color: #E0E0E0;
     }
-    
-    /* 標題與副標題樣式 */
     .main-title {
         font-size: 2.2rem;
         font-weight: 800;
@@ -33,31 +30,26 @@ st.markdown("""
         font-size: 0.95rem;
         margin-bottom: 1.5rem;
     }
-
-    /* Metric 卡片樣式重置 */
-    div[data-testid="stMetricValue"] {
-        font-size: 1.8rem !important;
+    /* 表格卡片外框 */
+    .table-header {
+        font-size: 1.2rem;
         font-weight: 700;
+        padding: 8px 12px;
+        border-radius: 6px 6px 0px 0px;
+        text-align: center;
+        margin-bottom: -10px;
     }
-    
-    /* 自訂提醒盒樣式 */
-    .info-box {
-        background: #1E232A;
-        border-left: 4px solid #00F2FE;
-        padding: 10px 15px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        color: #B0C0D0;
-        margin-bottom: 20px;
-    }
+    .h-5d { background-color: rgba(255, 75, 75, 0.2); color: #FF4B4B; border: 1px solid #FF4B4B; }
+    .h-20d { background-color: rgba(255, 193, 7, 0.2); color: #FFC107; border: 1px solid #FFC107; }
+    .h-60d { background-color: rgba(79, 172, 254, 0.2); color: #4FACFE; border: 1px solid #4FACFE; }
 </style>
 """, unsafe_allow_html=True)
 
 # 頁面標題
-st.markdown('<div class="main-title">📈 台股主動式 ETF 績效終端</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">即時追蹤近 5日 / 20日 / 60日 多週期累積報酬率 (Data powered by FinMind)</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">📈 台股主動式 ETF 績效排行榜</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">分別依 5日、20日、60日 累積報酬率獨立排序 (第一名至最後一名)</div>', unsafe_allow_html=True)
 
-# 追蹤標的 (包含熱門主動式/被動式 ETF 作為對照)
+# 追蹤標的 (可自由新增或調整代號)
 ETF_LIST = ["00980A", "00981A", "00982A", "00400A", "0050"]
 
 @st.cache_data(ttl=3600)
@@ -85,7 +77,7 @@ def load_etf_data():
                 
                 results.append({
                     "ETF代號": symbol,
-                    "最新價(元)": round(latest, 2),
+                    "最新價": round(latest, 2),
                     "5日績效": r5,
                     "20日績效": r20,
                     "60日績效": r60
@@ -95,57 +87,11 @@ def load_etf_data():
             
     return pd.DataFrame(results)
 
-with st.spinner('⚡ 正在載入金融市場數據...'):
-    df = load_etf_data()
+with st.spinner('⚡ 正在計算 5D / 20D / 60D 績效排行榜...'):
+    raw_df = load_etf_data()
 
-if not df.empty:
-    # 預設按 20日績效 降序排序
-    df = df.sort_values(by="20日績效", ascending=False).reset_index(drop=True)
-
-    # ----------------------------------------------------
-    # 頂部看板 (Top Market Leaders)
-    # ----------------------------------------------------
-    col1, col2, col3 = st.columns(3)
-    
-    # 防呆過濾以避免抓取資料不全導致 KeyError
-    df_5d = df.dropna(subset=["5日績效"]).sort_values(by="5日績效", ascending=False)
-    df_20d = df.dropna(subset=["20日績效"]).sort_values(by="20日績效", ascending=False)
-    df_60d = df.dropna(subset=["60日績效"]).sort_values(by="60日績效", ascending=False)
-
-    with col1:
-        if not df_5d.empty:
-            b5 = df_5d.iloc[0]
-            st.metric(
-                label="🔥 近 5 日強勢王", 
-                value=f"{b5['ETF代號']} (${b5['最新價(元)']})", 
-                delta=f"{b5['5日績效']}% (5D)"
-            )
-    with col2:
-        if not df_20d.empty:
-            b20 = df_20d.iloc[0]
-            st.metric(
-                label="👑 近 20 日冠軍", 
-                value=f"{b20['ETF代號']} (${b20['最新價(元)']})", 
-                delta=f"{b20['20日績效']}% (20D)"
-            )
-    with col3:
-        if not df_60d.empty:
-            b60 = df_60d.iloc[0]
-            st.metric(
-                label="🚀 近 60 日長線王", 
-                value=f"{b60['ETF代號']} (${b60['最新價(元)']})", 
-                delta=f"{b60['60日績效']}% (60D)"
-            )
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ----------------------------------------------------
-    # 全績效比較大表 (一目瞭然 + 色塊標示)
-    # ----------------------------------------------------
-    st.subheader("📊 全週期績效排行榜")
-    st.markdown('<div class="info-box">💡 點擊下方表格欄位標題（如：5日績效）即可自動依該週期重新排序。</div>', unsafe_allow_html=True)
-
-    # 設定台股漲跌色塊 (紅漲綠跌/正紅負綠)
+if not raw_df.empty:
+    # 色塊呈現邏輯 (正紅負綠)
     def style_performance(val):
         if pd.isna(val):
             return 'color: #777777;'
@@ -156,25 +102,56 @@ if not df.empty:
         else:
             return 'color: #FFFFFF;'
 
-    # 套用 Style 到 5日、20日、60日 欄位 (使用最新 .map 語法)
-    styled_df = (
-        df.style
-        .map(style_performance, subset=["5日績效", "20日績效", "60日績效"])
-        .format({
-            "最新價(元)": "{:.2f}",
-            "5日績效": "{:+.2f}%",
-            "20日績效": "{:+.2f}%",
-            "60日績效": "{:+.2f}%"
-        }, na_rep="N/A")
-    )
+    # 建立三欄平鋪版型
+    col1, col2, col3 = st.columns(3)
 
-    # 渲染專業風格表格
-    st.dataframe(
-        styled_df,
-        use_container_width=True,
-        hide_index=True,
-        height=300
-    )
+    # ----------------------------------------------------
+    # 表格 1：5日績效排名
+    # ----------------------------------------------------
+    with col1:
+        st.markdown('<div class="table-header h-5d">🔥 近 5 日績效排名</div>', unsafe_allow_html=True)
+        df_5d = raw_df.dropna(subset=["5日績效"]).sort_values(by="5日績效", ascending=False).reset_index(drop=True)
+        df_5d["名次"] = range(1, len(df_5d) + 1)
+        df_5d = df_5d[["名次", "ETF代號", "最新價", "5日績效"]]
+        
+        styled_5d = (
+            df_5d.style
+            .map(style_performance, subset=["5日績效"])
+            .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%"})
+        )
+        st.dataframe(styled_5d, use_container_width=True, hide_index=True)
+
+    # ----------------------------------------------------
+    # 表格 2：20日績效排名
+    # ----------------------------------------------------
+    with col2:
+        st.markdown('<div class="table-header h-20d">👑 近 20 日績效排名</div>', unsafe_allow_html=True)
+        df_20d = raw_df.dropna(subset=["20日績效"]).sort_values(by="20日績效", ascending=False).reset_index(drop=True)
+        df_20d["名次"] = range(1, len(df_20d) + 1)
+        df_20d = df_20d[["名次", "ETF代號", "最新價", "20日績效"]]
+        
+        styled_20d = (
+            df_20d.style
+            .map(style_performance, subset=["20日績效"])
+            .format({"最新價": "${:.2f}", "20日績效": "{:+.2f}%"})
+        )
+        st.dataframe(styled_20d, use_container_width=True, hide_index=True)
+
+    # ----------------------------------------------------
+    # 表格 3：60日績效排名
+    # ----------------------------------------------------
+    with col3:
+        st.markdown('<div class="table-header h-60d">🚀 近 60 日績效排名</div>', unsafe_allow_html=True)
+        df_60d = raw_df.dropna(subset=["60日績效"]).sort_values(by="60日績效", ascending=False).reset_index(drop=True)
+        df_60d["名次"] = range(1, len(df_60d) + 1)
+        df_60d = df_60d[["名次", "ETF代號", "最新價", "60日績效"]]
+        
+        styled_60d = (
+            df_60d.style
+            .map(style_performance, subset=["60日績效"])
+            .format({"最新價": "${:.2f}", "60日績效": "{:+.2f}%"})
+        )
+        st.dataframe(styled_60d, use_container_width=True, hide_index=True)
 
 else:
     st.error("⚠️ 資料載入失敗，請確認網路連線或 ETF 代號。")
