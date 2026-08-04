@@ -10,94 +10,90 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. 自訂 Cyberpunk 晶透毛玻璃與全高對比 CSS
+# 2. 超高對比強效 CSS 樣式
 st.markdown("""
 <style>
-    /* 全域暗黑底色與背景微光 */
+    /* 全域背景：極致深黑 */
     .stApp {
-        background: radial-gradient(circle at 50% 10%, #1a1c29 0%, #080a11 100%);
+        background-color: #08090C !important;
         color: #FFFFFF !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     
-    /* 大標題霓虹果凍效果 */
+    /* 標題與副標題 */
     .main-title {
         font-size: 2.5rem;
         font-weight: 900;
         text-align: center;
-        background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #00C6FF 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0px 0px 20px rgba(0, 242, 254, 0.3);
-        margin-bottom: 0.3rem;
+        color: #00F2FE;
+        text-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+        margin-bottom: 0.2rem;
     }
     .sub-title {
-        color: #94A3B8 !important;
-        font-size: 1.05rem;
-        font-weight: 600;
+        color: #CBD5E1 !important;
+        font-size: 1.1rem;
+        font-weight: 700;
         text-align: center;
         margin-bottom: 2rem;
     }
 
-    /* 區塊標題 */
     .section-title {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #38BDF8;
-        border-left: 5px solid #00F2FE;
-        padding-left: 12px;
-        margin-top: 10px;
-        margin-bottom: 15px;
-        text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-    }
-
-    /* 晶透毛玻璃表頭 (Glassmorphism Table Header) */
-    .table-header {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         font-weight: 900;
-        padding: 12px 15px;
-        border-radius: 12px 12px 0px 0px;
-        text-align: center;
-        margin-bottom: -5px;
-        letter-spacing: 1px;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    }
-    .h-bench { 
-        background: rgba(30, 41, 59, 0.7); 
-        color: #38BDF8; 
-        border: 1px solid rgba(56, 189, 248, 0.5); 
-    }
-    .h-5d { 
-        background: rgba(131, 24, 67, 0.6); 
-        color: #FF70A6; 
-        border: 1px solid rgba(255, 112, 166, 0.5); 
-    }
-    .h-20d { 
-        background: rgba(120, 53, 15, 0.6); 
-        color: #FBBF24; 
-        border: 1px solid rgba(251, 191, 36, 0.5); 
-    }
-    .h-60d { 
-        background: rgba(6, 78, 59, 0.6); 
-        color: #34D399; 
-        border: 1px solid rgba(52, 211, 153, 0.5); 
+        color: #38BDF8;
+        border-left: 6px solid #00F2FE;
+        padding-left: 12px;
+        margin-top: 20px;
+        margin-bottom: 15px;
     }
 
-    /* 全表格內容強行置中與高對比字體 */
-    div[data-testid="stDataFrame"] table {
-        text-align: center !important;
+    /* 自訂超高對比 HTML 表格樣式 */
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px; /* 列與列之間的間隔 */
+        margin-bottom: 20px;
     }
-    div[data-testid="stDataFrame"] td, div[data-testid="stDataFrame"] th {
-        text-align: center !important;
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
+    
+    .custom-table th {
+        background-color: #1E293B;
+        color: #38BDF8;
+        font-size: 1.15rem;
+        font-weight: 900;
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #334155;
     }
+    
+    /* 表頭專屬色彩 */
+    .th-bench { background-color: #0F172A !important; color: #38BDF8 !important; border: 2px solid #0284C7 !important; }
+    .th-5d { background-color: #4C0519 !important; color: #FF70A6 !important; border: 2px solid #E11D48 !important; }
+    .th-20d { background-color: #451A03 !important; color: #FCD34D !important; border: 2px solid #D97706 !important; }
+    .th-60d { background-color: #064E3B !important; color: #34D399 !important; border: 2px solid #059669 !important; }
+
+    .custom-table td {
+        padding: 12px 8px;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 900;
+        background-color: #111827;
+        border-top: 1px solid #1F2937;
+        border-bottom: 1px solid #1F2937;
+    }
+
+    /* 欄位高對比爆亮色彩 */
+    .badge-rank { background-color: #312E81; color: #A5B4FC; font-size: 1.1rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #4338CA; }
+    .badge-symbol { background-color: #0C4A6E; color: #38BDF8; font-size: 1.15rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #0284C7; }
+    .badge-price { color: #FDE047; font-size: 1.15rem; font-weight: 900; }
+    
+    /* 漲跌純爆亮色塊 */
+    .pos-val { background-color: #991B1B !important; color: #FFD1D1 !important; font-size: 1.2rem !important; font-weight: 900 !important; border-radius: 6px; padding: 6px 10px; border: 1px solid #EF4444; }
+    .neg-val { background-color: #065F46 !important; color: #D1FAE5 !important; font-size: 1.2rem !important; font-weight: 900 !important; border-radius: 6px; padding: 6px 10px; border: 1px solid #10B981; }
+    .zero-val { color: #FFFFFF !important; font-size: 1.1rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# 頁面標題
+# 標題
 st.markdown('<div class="main-title">📈 台股主動式 ETF 績效終端</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">頂部設定大盤基準線，下方即時對比純主動式 ETF 5日 / 20日 / 60日 累積報酬率</div>', unsafe_allow_html=True)
 
@@ -142,106 +138,152 @@ def fetch_stock_data(symbol_list):
             
     return pd.DataFrame(results)
 
-with st.spinner('⚡ 正在載入金融市場數據...'):
+# HTML 數值格式化工具
+def render_perf_cell(val):
+    if pd.isna(val) or val is None:
+        return '<span class="zero-val">N/A</span>'
+    elif val > 0:
+        return f'<span class="pos-val">+{val:.2f}%</span>'
+    elif val < 0:
+        return f'<span class="neg-val">{val:.2f}%</span>'
+    else:
+        return f'<span class="zero-val">0.00%</span>'
+
+with st.spinner('⚡ 正在載入高清晰金融數據...'):
     bench_df = fetch_stock_data(BENCHMARK_LIST)
     active_df = fetch_stock_data(ACTIVE_ETF_LIST)
 
-# 🎨 全欄位高對比色彩 & 果凍色塊設定
-def style_rank(val):
-    return 'background-color: rgba(99, 102, 241, 0.25); color: #A5B4FC; font-weight: 900; text-align: center;'
-
-def style_symbol(val):
-    return 'background-color: rgba(14, 165, 233, 0.25); color: #38BDF8; font-weight: 900; text-align: center;'
-
-def style_price(val):
-    return 'background-color: rgba(234, 179, 8, 0.2); color: #FDE047; font-weight: 900; text-align: center;'
-
-def style_performance(val):
-    if pd.isna(val):
-        return 'color: #6B7280; text-align: center;'
-    elif val > 0:
-        return 'background-color: rgba(239, 68, 68, 0.35); color: #FF6B6B; font-weight: 900; text-align: center; border-radius: 4px;'
-    elif val < 0:
-        return 'background-color: rgba(34, 197, 94, 0.35); color: #4ADE80; font-weight: 900; text-align: center; border-radius: 4px;'
-    else:
-        return 'color: #FFFFFF; font-weight: 900; text-align: center;'
-
 # ----------------------------------------------------
-# 頂部：獨立大盤與基準對照區 (Benchmark)
+# 頂部：基準對照區 (Benchmark)
 # ----------------------------------------------------
 st.markdown('<div class="section-title">📌 大盤與市場基準對照 (Benchmark)</div>', unsafe_allow_html=True)
 
 if not bench_df.empty:
-    st.markdown('<div class="table-header h-bench">⚖️ 基準對照標的 (0050 / 009816)</div>', unsafe_allow_html=True)
-    styled_bench = (
-        bench_df.style
-        .map(style_symbol, subset=["ETF代號"])
-        .map(style_price, subset=["最新價"])
-        .map(style_performance, subset=["5日績效", "20日績效", "60日績效"])
-        .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%", "20日績效": "{:+.2f}%", "60日績效": "{:+.2f}%"})
-    )
-    st.dataframe(styled_bench, use_container_width=True, hide_index=True)
+    html_code = """
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th class="th-bench">代號</th>
+                <th class="th-bench">最新價</th>
+                <th class="th-bench">5日績效</th>
+                <th class="th-bench">20日績效</th>
+                <th class="th-bench">60日績效</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
+    for _, row in bench_df.iterrows():
+        html_code += f"""
+        <tr>
+            <td><span class="badge-symbol">{row['ETF代號']}</span></td>
+            <td><span class="badge-price">${row['最新價']:.2f}</span></td>
+            <td>{render_perf_cell(row['5日績效'])}</td>
+            <td>{render_perf_cell(row['20日績效'])}</td>
+            <td>{render_perf_cell(row['60日績效'])}</td>
+        </tr>
+        """
+    html_code += "</tbody></table>"
+    st.markdown(html_code, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 下方：三大天期純主動式 ETF 獨立排行榜
+# 下方：三大天期獨立排行榜 (HTML 高對比渲染)
 # ----------------------------------------------------
 st.markdown('<div class="section-title">🏆 主動式 ETF 全週期績效排行榜</div>', unsafe_allow_html=True)
 
 if not active_df.empty:
     col1, col2, col3 = st.columns(3)
 
-    # 1. 5日績效
+    # 1. 近 5 日
     with col1:
-        st.markdown('<div class="table-header h-5d">🔥 近 5 日績效排名</div>', unsafe_allow_html=True)
         df_5d = active_df.dropna(subset=["5日績效"]).sort_values(by="5日績效", ascending=False).reset_index(drop=True)
-        df_5d["名次"] = [f"N°{i}" for i in range(1, len(df_5d) + 1)]
-        df_5d = df_5d[["名次", "ETF代號", "最新價", "5日績效"]]
-        
-        styled_5d = (
-            df_5d.style
-            .map(style_rank, subset=["名次"])
-            .map(style_symbol, subset=["ETF代號"])
-            .map(style_price, subset=["最新價"])
-            .map(style_performance, subset=["5日績效"])
-            .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%"})
-        )
-        st.dataframe(styled_5d, use_container_width=True, hide_index=True)
+        html_5d = """
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th class="th-5d" colspan="4">🔥 近 5 日績效排名</th>
+                </tr>
+                <tr>
+                    <th class="th-5d">名次</th>
+                    <th class="th-5d">代號</th>
+                    <th class="th-5d">最新價</th>
+                    <th class="th-5d">報酬率</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        for idx, row in df_5d.iterrows():
+            html_5d += f"""
+            <tr>
+                <td><span class="badge-rank">N°{idx+1}</span></td>
+                <td><span class="badge-symbol">{row['ETF代號']}</span></td>
+                <td><span class="badge-price">${row['最新價']:.2f}</span></td>
+                <td>{render_perf_cell(row['5日績效'])}</td>
+            </tr>
+            """
+        html_5d += "</tbody></table>"
+        st.markdown(html_5d, unsafe_allow_html=True)
 
-    # 2. 20日績效
+    # 2. 近 20 日
     with col2:
-        st.markdown('<div class="table-header h-20d">👑 近 20 日績效排名</div>', unsafe_allow_html=True)
         df_20d = active_df.dropna(subset=["20日績效"]).sort_values(by="20日績效", ascending=False).reset_index(drop=True)
-        df_20d["名次"] = [f"N°{i}" for i in range(1, len(df_20d) + 1)]
-        df_20d = df_20d[["名次", "ETF代號", "最新價", "20日績效"]]
-        
-        styled_20d = (
-            df_20d.style
-            .map(style_rank, subset=["名次"])
-            .map(style_symbol, subset=["ETF代號"])
-            .map(style_price, subset=["最新價"])
-            .map(style_performance, subset=["20日績效"])
-            .format({"最新價": "${:.2f}", "20日績效": "{:+.2f}%"})
-        )
-        st.dataframe(styled_20d, use_container_width=True, hide_index=True)
+        html_20d = """
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th class="th-20d" colspan="4">👑 近 20 日績效排名</th>
+                </tr>
+                <tr>
+                    <th class="th-20d">名次</th>
+                    <th class="th-20d">代號</th>
+                    <th class="th-20d">最新價</th>
+                    <th class="th-20d">報酬率</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        for idx, row in df_20d.iterrows():
+            html_20d += f"""
+            <tr>
+                <td><span class="badge-rank">N°{idx+1}</span></td>
+                <td><span class="badge-symbol">{row['ETF代號']}</span></td>
+                <td><span class="badge-price">${row['最新價']:.2f}</span></td>
+                <td>{render_perf_cell(row['20日績效'])}</td>
+            </tr>
+            """
+        html_20d += "</tbody></table>"
+        st.markdown(html_20d, unsafe_allow_html=True)
 
-    # 3. 60日績效
+    # 3. 近 60 日
     with col3:
-        st.markdown('<div class="table-header h-60d">🚀 近 60 日績效排名</div>', unsafe_allow_html=True)
         df_60d = active_df.dropna(subset=["60日績效"]).sort_values(by="60日績效", ascending=False).reset_index(drop=True)
-        df_60d["名次"] = [f"N°{i}" for i in range(1, len(df_60d) + 1)]
-        df_60d = df_60d[["名次", "ETF代號", "最新價", "60日績效"]]
-        
-        styled_60d = (
-            df_60d.style
-            .map(style_rank, subset=["名次"])
-            .map(style_symbol, subset=["ETF代號"])
-            .map(style_price, subset=["最新價"])
-            .map(style_performance, subset=["60日績效"])
-            .format({"最新價": "${:.2f}", "60日績效": "{:+.2f}%"})
-        )
-        st.dataframe(styled_60d, use_container_width=True, hide_index=True)
+        html_60d = """
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th class="th-60d" colspan="4">🚀 近 60 日績效排名</th>
+                </tr>
+                <tr>
+                    <th class="th-60d">名次</th>
+                    <th class="th-60d">代號</th>
+                    <th class="th-60d">最新價</th>
+                    <th class="th-60d">報酬率</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        for idx, row in df_60d.iterrows():
+            html_60d += f"""
+            <tr>
+                <td><span class="badge-rank">N°{idx+1}</span></td>
+                <td><span class="badge-symbol">{row['ETF代號']}</span></td>
+                <td><span class="badge-price">${row['最新價']:.2f}</span></td>
+                <td>{render_perf_cell(row['60日績效'])}</td>
+            </tr>
+            """
+        html_60d += "</tbody></table>"
+        st.markdown(html_60d, unsafe_allow_html=True)
 
 else:
     st.error("⚠️ 資料載入失敗，請確認網路連線。")
