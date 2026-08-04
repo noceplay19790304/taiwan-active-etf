@@ -57,7 +57,7 @@ st.markdown("""
 st.markdown('<div class="main-title">📈 台股主動式 ETF 績效終端</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">即時追蹤近 5日 / 20日 / 60日 多週期累積報酬率 (Data powered by FinMind)</div>', unsafe_allow_html=True)
 
-# 追蹤標的 (可自由新增)
+# 追蹤標的 (包含熱門主動式/被動式 ETF 作為對照)
 ETF_LIST = ["00980A", "00981A", "00982A", "00400A", "0050"]
 
 @st.cache_data(ttl=3600)
@@ -105,30 +105,37 @@ if not df.empty:
     # ----------------------------------------------------
     # 頂部看板 (Top Market Leaders)
     # ----------------------------------------------------
-    top_20d = df.iloc[0]
-    best_5d = df.sort_values(by="5日績效", ascending=False).iloc[0]
-    best_60d = df.sort_values(by="60日績效", ascending=False).iloc[0]
-
     col1, col2, col3 = st.columns(3)
     
+    # 防呆過濾以避免抓取資料不全導致 KeyError
+    df_5d = df.dropna(subset=["5日績效"]).sort_values(by="5日績效", ascending=False)
+    df_20d = df.dropna(subset=["20日績效"]).sort_values(by="20日績效", ascending=False)
+    df_60d = df.dropna(subset=["60日績效"]).sort_values(by="60日績效", ascending=False)
+
     with col1:
-        st.metric(
-            label="🔥 近 5 日強勢王", 
-            value=f"{best_5d['ETF代號']} (${best_5d['最新價(元)']})", 
-            delta=f"{best_5d['5日績效']}% (5D)"
-        )
+        if not df_5d.empty:
+            b5 = df_5d.iloc[0]
+            st.metric(
+                label="🔥 近 5 日強勢王", 
+                value=f"{b5['ETF代號']} (${b5['最新價(元)']})", 
+                delta=f"{b5['5日績效']}% (5D)"
+            )
     with col2:
-        st.metric(
-            label="👑 近 20 日冠軍", 
-            value=f"{top_20d['ETF代號']} (${top_20d['最新價(元)']})", 
-            delta=f"{top_20d['20日績效']}% (20D)"
-        )
+        if not df_20d.empty:
+            b20 = df_20d.iloc[0]
+            st.metric(
+                label="👑 近 20 日冠軍", 
+                value=f"{b20['ETF代號']} (${b20['最新價(元)']})", 
+                delta=f"{b20['20日績效']}% (20D)"
+            )
     with col3:
-        st.metric(
-            label="🚀 近 60 日長線王", 
-            value=f"{best_60d['ETF代號']} (${best_60d['最新價(元)']})", 
-            delta=f"{best_60d['60日績效']}% (60D)"
-        )
+        if not df_60d.empty:
+            b60 = df_60d.iloc[0]
+            st.metric(
+                label="🚀 近 60 日長線王", 
+                value=f"{b60['ETF代號']} (${b60['最新價(元)']})", 
+                delta=f"{b60['60日績效']}% (60D)"
+            )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -149,10 +156,10 @@ if not df.empty:
         else:
             return 'color: #FFFFFF;'
 
-    # 套用 Style 到 5日、20日、60日 欄位，並格式化為百分比字串
+    # 套用 Style 到 5日、20日、60日 欄位 (使用最新 .map 語法)
     styled_df = (
         df.style
-        .applymap(style_performance, subset=["5日績效", "20日績效", "60日績效"])
+        .map(style_performance, subset=["5日績效", "20日績效", "60日績效"])
         .format({
             "最新價(元)": "{:.2f}",
             "5日績效": "{:+.2f}%",
@@ -170,4 +177,4 @@ if not df.empty:
     )
 
 else:
-    st.error("⚠️ 資料載入失敗，請稍後重試。")
+    st.error("⚠️ 資料載入失敗，請確認網路連線或 ETF 代號。")
