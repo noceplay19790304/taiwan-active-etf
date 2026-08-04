@@ -10,17 +10,17 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. 全表格風格高度統一 CSS：深藍底 (#1E293B) + 鮮黃字 (#FFE81F) + 強制置中
+# 2. 強制全表格同色 (深藍底 + 鮮黃粗字) 與全內容置中 CSS
 st.markdown("""
 <style>
-    /* 全域極致深黑背景 */
+    /* 全域極致深藍背景 */
     .stApp {
         background-color: #030712 !important;
         color: #FFE81F !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
     
-    /* 主標題與副標題 */
+    /* 大標題黃金霓虹效果 */
     .main-title {
         font-size: 2.5rem;
         font-weight: 900;
@@ -49,48 +49,51 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
     }
 
-    /* 自訂統一 HTML 表格 */
-    .uniform-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 4px;
-        margin-bottom: 20px;
+    /* 頂部標籤列（與表格風格統一） */
+    .table-header {
+        font-size: 1.2rem;
+        font-weight: 900;
+        padding: 12px 15px;
+        border-radius: 10px 10px 0px 0px;
+        text-align: center;
+        margin-bottom: -1px;
+        background-color: #0F172A !important;
+        color: #FFE81F !important;
+        border: 2px solid #3B82F6 !important;
+    }
+
+    /* 🎯 關鍵：強制所有 stDataFrame 裡面的表格、表頭(th)、資料格(td)全部【字體置中】與【統一配色】 */
+    div[data-testid="stDataFrame"] {
+        width: 100% !important;
     }
     
-    /* 🎯 所有欄位表頭：深藍底 + 鮮黃字 + 粗體 + 完全置中 */
-    .uniform-table th {
-        background-color: #1E293B !important;
+    div[data-testid="stDataFrame"] table {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    /* 全表頭統一：深藍底 + 鮮黃字 + 粗體 + 置中 */
+    div[data-testid="stDataFrame"] th, 
+    div[data-testid="stDataFrame"] th * {
+        background-color: #0F172A !important;
         color: #FFE81F !important;
         font-size: 1.15rem !important;
         font-weight: 900 !important;
-        padding: 12px 8px !important;
         text-align: center !important;
-        vertical-align: middle !important;
+        justify-content: center !important;
         border: 1px solid #334155 !important;
     }
 
-    /* 🎯 所有內容資料格：深藍底 + 鮮黃字 + 粗體 + 完全置中 */
-    .uniform-table td {
+    /* 全資料格統一：深藍底 + 鮮黃字 + 粗體 + 置中 */
+    div[data-testid="stDataFrame"] td, 
+    div[data-testid="stDataFrame"] td * {
         background-color: #1E293B !important;
         color: #FFE81F !important;
         font-size: 1.1rem !important;
         font-weight: 900 !important;
-        padding: 12px 8px !important;
         text-align: center !important;
-        vertical-align: middle !important;
+        justify-content: center !important;
         border: 1px solid #334155 !important;
-    }
-
-    /* 頂部區域標籤 */
-    .table-top-header {
-        font-size: 1.2rem;
-        font-weight: 900;
-        padding: 10px;
-        text-align: center;
-        background-color: #0F172A;
-        color: #FFE81F;
-        border: 1px solid #3B82F6;
-        border-radius: 8px 8px 0 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -140,14 +143,13 @@ def fetch_stock_data(symbol_list):
             
     return pd.DataFrame(results)
 
-def format_perf(val):
-    if pd.isna(val) or val is None:
-        return "N/A"
-    return f"{val:+.2f}%"
-
-with st.spinner('⚡ 正在載入全深藍黃字數據...'):
+with st.spinner('⚡ 正在載入深藍黃字終端數據...'):
     bench_df = fetch_stock_data(BENCHMARK_LIST)
     active_df = fetch_stock_data(ACTIVE_ETF_LIST)
+
+# 🎨 統一風格函式（所有欄位均回傳一模一樣的深藍底 + 鮮黃字與置中）
+def uniform_style(val):
+    return 'background-color: #1E293B; color: #FFE81F; font-weight: 900; text-align: center;'
 
 # ----------------------------------------------------
 # 頂部：獨立大盤與基準對照區 (Benchmark)
@@ -155,32 +157,13 @@ with st.spinner('⚡ 正在載入全深藍黃字數據...'):
 st.markdown('<div class="section-title">📌 大盤與市場基準對照 (Benchmark)</div>', unsafe_allow_html=True)
 
 if not bench_df.empty:
-    st.markdown('<div class="table-top-header">⚖️ 基準對照標的 (0050 / 009816)</div>', unsafe_allow_html=True)
-    html_bench = """
-    <table class="uniform-table">
-        <thead>
-            <tr>
-                <th>ETF代號</th>
-                <th>最新價</th>
-                <th>5日績效</th>
-                <th>20日績效</th>
-                <th>60日績效</th>
-            </tr>
-        </thead>
-        <tbody>
-    """
-    for _, row in bench_df.iterrows():
-        html_bench += f"""
-        <tr>
-            <td>{row['ETF代號']}</td>
-            <td>${row['最新價']:.2f}</td>
-            <td>{format_perf(row['5日績效'])}</td>
-            <td>{format_perf(row['20日績效'])}</td>
-            <td>{format_perf(row['60日績效'])}</td>
-        </tr>
-        """
-    html_bench += "</tbody></table>"
-    st.markdown(html_bench, unsafe_allow_html=True)
+    st.markdown('<div class="table-header">⚖️ 基準對照標的 (0050 / 009816)</div>', unsafe_allow_html=True)
+    styled_bench = (
+        bench_df.style
+        .map(uniform_style)
+        .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%", "20日績效": "{:+.2f}%", "60日績效": "{:+.2f}%"})
+    )
+    st.dataframe(styled_bench, use_container_width=True, hide_index=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -194,90 +177,45 @@ if not active_df.empty:
 
     # 1. 5日績效
     with col1:
-        st.markdown('<div class="table-top-header">🔥 近 5 日績效排名</div>', unsafe_allow_html=True)
+        st.markdown('<div class="table-header">🔥 近 5 日績效排名</div>', unsafe_allow_html=True)
         df_5d = active_df.dropna(subset=["5日績效"]).sort_values(by="5日績效", ascending=False).reset_index(drop=True)
+        df_5d["名次"] = [f"N°{i}" for i in range(1, len(df_5d) + 1)]
+        df_5d = df_5d[["名次", "ETF代號", "最新價", "5日績效"]]
         
-        html_5d = """
-        <table class="uniform-table">
-            <thead>
-                <tr>
-                    <th>名次</th>
-                    <th>ETF代號</th>
-                    <th>最新價</th>
-                    <th>5日績效</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-        for idx, row in df_5d.iterrows():
-            html_5d += f"""
-            <tr>
-                <td>N°{idx+1}</td>
-                <td>{row['ETF代號']}</td>
-                <td>${row['最新價']:.2f}</td>
-                <td>{format_perf(row['5日績效'])}</td>
-            </tr>
-            """
-        html_5d += "</tbody></table>"
-        st.markdown(html_5d, unsafe_allow_html=True)
+        styled_5d = (
+            df_5d.style
+            .map(uniform_style)
+            .format({"最新價": "${:.2f}", "5日績效": "{:+.2f}%"})
+        )
+        st.dataframe(styled_5d, use_container_width=True, hide_index=True)
 
     # 2. 20日績效
     with col2:
-        st.markdown('<div class="table-top-header">👑 近 20 日績效排名</div>', unsafe_allow_html=True)
+        st.markdown('<div class="table-header">👑 近 20 日績效排名</div>', unsafe_allow_html=True)
         df_20d = active_df.dropna(subset=["20日績效"]).sort_values(by="20日績效", ascending=False).reset_index(drop=True)
+        df_20d["名次"] = [f"N°{i}" for i in range(1, len(df_20d) + 1)]
+        df_20d = df_20d[["名次", "ETF代號", "最新價", "20日績效"]]
         
-        html_20d = """
-        <table class="uniform-table">
-            <thead>
-                <tr>
-                    <th>名次</th>
-                    <th>ETF代號</th>
-                    <th>最新價</th>
-                    <th>20日績效</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-        for idx, row in df_20d.iterrows():
-            html_20d += f"""
-            <tr>
-                <td>N°{idx+1}</td>
-                <td>{row['ETF代號']}</td>
-                <td>${row['最新價']:.2f}</td>
-                <td>{format_perf(row['20日績效'])}</td>
-            </tr>
-            """
-        html_20d += "</tbody></table>"
-        st.markdown(html_20d, unsafe_allow_html=True)
+        styled_20d = (
+            df_20d.style
+            .map(uniform_style)
+            .format({"最新價": "${:.2f}", "20日績效": "{:+.2f}%"})
+        )
+        st.dataframe(styled_20d, use_container_width=True, hide_index=True)
 
     # 3. 60日績效
     with col3:
-        st.markdown('<div class="table-top-header">🚀 近 60 日績效排名</div>', unsafe_allow_html=True)
+        st.markdown('<div class="table-header">🚀 近 60 日績效排名</div>', unsafe_allow_html=True)
         df_60d = active_df.dropna(subset=["60日績效"]).sort_values(by="60日績效", ascending=False).reset_index(drop=True)
+        df_60d["名次"] = [f"N°{i}" for i in range(1, len(df_60d) + 1)]
+        df_60d = df_60d[["名次", "ETF代號", "最新價", "60日績效"]]
         
-        html_60d = """
-        <table class="uniform-table">
-            <thead>
-                <tr>
-                    <th>名次</th>
-                    <th>ETF代號</th>
-                    <th>最新價</th>
-                    <th>60日績效</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-        for idx, row in df_60d.iterrows():
-            html_60d += f"""
-            <tr>
-                <td>N°{idx+1}</td>
-                <td>{row['ETF代號']}</td>
-                <td>${row['最新價']:.2f}</td>
-                <td>{format_perf(row['60日績效'])}</td>
-            </tr>
-            """
-        html_60d += "</tbody></table>"
-        st.markdown(html_60d, unsafe_allow_html=True)
+        styled_60d = (
+            df_60d.style
+            .map(uniform_style)
+            .format({"最新價": "${:.2f}", "60日績效": "{:+.2f}%"})
+        )
+        st.dataframe(styled_60d, use_container_width=True, hide_index=True)
 
 else:
     st.error("⚠️ 資料載入失敗，請確認網路連線。")
