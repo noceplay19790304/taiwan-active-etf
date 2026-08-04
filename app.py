@@ -1,70 +1,60 @@
 import streamlit as st
 import requests
 import pandas as pd
-import datetime
+from datetime import datetime, timedelta
 
 st.set_page_config(page_title="台股主動式 ETF 績效榜", layout="wide")
 
 st.title("📊 台股主動式 ETF 績效排行榜")
-st.write("資料來源：台灣證券交易所 (TWSE) 官方 API")
+st.write("資料來源：FinMind 台股歷史資料 API")
 
-# 1. 填入你想追蹤的台股主動式 ETF 清單 (只需寫代號，例如 00980A)
+# 1. 填入你想追蹤的台股主動式 ETF 清單 (只需寫數字與字母，例如 00980A)
 ETF_LIST = ["00980A", "00981A", "00982A", "00400A", "0050"]
 
-@st.cache_data(ttl=3600)  # 快取 1 小時
-def get_twse_data():
-    # 取得近半年（180天）的日期範圍
-    end_date = datetime.date.today()
-    start_date = end_date - datetime.timedelta(days=180)
-    
-    start_str = start_date.strftime("%Y%m%d")
-    end_str = end_date.strftime("%Y%m%d")
-
+@st.cache_data(ttl=3600)  # 快取 1 小時，避免過度呼叫
+def load_etf_data_finmind():
     results = []
+    
+    # 計算近 120 天的日期範圍（確保扣除例假日後有足夠的 60 個交易日）
+    today = datetime.today()
+    start_date = (today - timedelta(days=120)).strftime("%Y-%m-%d")
     
     for symbol in ETF_LIST:
         try:
-            # 呼叫證交所歷史收盤價 API
-            url = f"https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
-            # 備用官方路徑：抓取個股近期成交資訊
-            response = requests.get(f"https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date={end_str}&stockNo={symbol}&response=json")
-            data = response.json()
+            url = f"https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id={symbol}&start_date={start_date}"
+            res = requests.get(url)
+            data = res.json()
             
-            if data.get("stat") == "OK" and "data" in data:
-                raw_data = data["data"]
-                # 提取日期與收盤價
-                prices = []
-                for row in raw_data:
-                    # 清除字串中的逗號，轉為浮點數
-                    price_str = row[6].replace(",", "")
-                    try:
-                        prices.append(float(price_str))
-                    except ValueError:
-                        continue
+            if data.get("msg") == "success" and len(data.get("data", [])) >= 6:
+                df = pd.DataFrame(data["data"])
+                prices = df['close'].tolist()
                 
-                # 確保至少有 6 天資料（計算5日績效）
-                if len(prices) >= 6:
-                    latest = prices[-1]
-                    p_5d = prices[-6]
-                    r5 = round(((latest - p_5d) / p_5d) * 100, 2)
-                    
-                    r20 = round(((latest - prices[-21]) / prices[-21]) * 100, 2) if len(prices) >= 21 else None
-                    r60 = round(((latest - prices[-61]) / prices[-61]) * 100, 2) if len(prices) >= 61 else None
-                    
-                    results.append({
-                        "ETF 代號": symbol,
-                        "最新價 (元)": round(latest, 2),
-                        "5日績效 (%)": r5,
-                        "20日績效 (%)": r20,
-                        "60日績效 (%)": r60
-                    })
+                latest = prices[-1]
+                
+                # 計算 5日績效
+                p_5d = prices[-6]
+                r5 = round(((latest - p_5d) / p_5d) * 100, 2)
+                
+                # 計算 20日績效
+                r20 = round(((latest - prices[-21]) / prices[-21]) * 100, 2) if len(prices) >= 21 else None
+                
+                # 計算 60日績效
+                r60 = round(((latest - prices[-61]) / prices[-61]) * 100, 2) if len(prices) >= 61 else None
+                
+                results.append({
+                    "ETF 代號": symbol,
+                    "最新價 (元)": round(latest, 2),
+                    "5日績效 (%)": r5,
+                    "20日績效 (%)": r20,
+                    "60日績效 (%)": r60
+                })
         except Exception:
             continue
             
     return pd.DataFrame(results)
 
-with st.spinner('正在從證交所讀取最新數據...'):
-    data = get_twse_data()
+with st.spinner('正在從 FinMind 取得近 120 天歷史股價...'):
+    data = load_etf_data_finmind()
 
 # 顯示表格與排序
 if not data.empty:
@@ -81,4 +71,4 @@ if not data.empty:
         hide_index=True
     )
 else:
-    st.warning("⚠️ 證交所 API 響應延遲或今日非交易日，請稍後再試。")
+    st.error("⚠️ 資料抓取失敗，請確認網路連線或 ETF 代號。")
